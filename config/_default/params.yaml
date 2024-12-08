@@ -4,29 +4,29 @@
 
 author:
   name: GionaBolzer
-  image: author.png
-  greeting: "Your new Qubt site :tada:"
-  icon: ":wave:"
+  image: author1.jpg
+  greeting: "InfoSec enthusiast"
+#  icon: ":wave:"
 
 ############################
 ## Links
 ############################
 
 links:
-  - github: https://github.com/GionaBolzer/blog
-  - link: https://github.com/GionaBolzer/blog#readme
+  - github: https://github.com/GionaBolzer/
+  # - link: https://github.com/GionaBolzer/blog#
   # - website: 
   # - x-twitter: 
   # - mastodon: 
   # - linkedin: 
-  # - instagram: 
+  - instagram: https://www.instagram.com/gionabolzer/
   # - reddit: 
   # - telegram: 
   # - whatsapp: 
   # - signal: 
   # - codepen: 
   # - dev: 
-  # - email: 
+  - email: mailto:gionabolzer2@gmail.com
   # - discord: 
   # - orcid: 
   # - slack: 
@@ -65,6 +65,6 @@ links:
 ###############################
 
 title: blog
-description: "Site build with Qubt & Hugo"
+description: ""
 images:
-  - thumbnail.png
+  - author1.jpg

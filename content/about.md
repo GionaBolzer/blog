@@ -3,10 +3,10 @@
 type: misc
 
 # change these
-jobTitle: Blogger
+jobTitle: InfoSec enthusiast 
 name: GionaBolzer
 bio: true
-icon: ":coffee:"
+# icon: ":coffee:"
 ---
 
 Add your Bio here!:+1:
