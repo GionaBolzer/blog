@@ -1,0 +1,24 @@
+{
+  "name": "blog",
+  "version": "1.0.0",
+  "description": "For the customization",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-tailwind": "npx tailwindcss -i ./assets/css/main.css -o ./assets/css/custom.css",
+    "dev-tailwind": "npx tailwindcss -i ./assets/css/main.css -o ./assets/css/custom.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GionaBolzer/blog.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GionaBolzer/blog/issues"
+  },
+  "homepage": "https://github.com/GionaBolzer/blog#readme",
+  "devDependencies": {
+    "tailwind": "^4.0.0"
+  }
+}
