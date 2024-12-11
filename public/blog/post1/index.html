@@ -455,7 +455,7 @@
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>Exhausted the search. The binary looks good to go!
 </span></span></code></pre></div><p>we see that our effort paid off.</p>
-<h2 id="amsi-bypass">Amsi Bypass</h2>
+<h2 id="applocker-bypass">AppLocker Bypass</h2>
 <p>Because there is also AppLocker in place, our user can&rsquo;t invoke the .NET framework directly in the terminal; a simple call to a C# function will fail.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-powershell" data-lang="powershell"><span style="display:flex;"><span>PS C:\Users\student&gt; [<span style="color:#66d9ef">Math</span>]::Cos(<span style="color:#ae81ff">1</span>)
 </span></span><span style="display:flex;"><span>Cannot invoke method. Method invocation is supported only on core types <span style="color:#66d9ef">in</span> this language mode.

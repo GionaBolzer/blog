@@ -9,4 +9,4 @@ bio: true
 # icon: ":coffee:"
 ---
 
-Just an snowboard coach with the passion of offensive security.
+Just a snowboard coach with the passion of offensive security.

