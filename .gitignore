@@ -1,7 +1,8 @@
 # Hugo stuff
 .hugo_build.lock
 **/resources/_gen/
-#/public
+public/
+*.tar
 
 
 # Apple stuff

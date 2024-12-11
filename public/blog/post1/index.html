@@ -1,5 +1,5 @@
 <!doctype html><html lang="en-us">
-  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <head>
     
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,7 +28,7 @@
   
 
 
-<link type="text/css" rel="stylesheet" href="/css/main.bundle.min.a79bb2d99623218b17a5d63695f592ec61ceaedd0ddff91f71272ce63808184b.css" integrity="sha256-p5uy2ZYjIYsXpdY2lfWS7GHOrt0N3/kfcScs5jgIGEs=" />
+<link type="text/css" rel="stylesheet" href="/css/main.bundle.min.a73a0eb6a60dfd2487f0c9a4e9555dc2f4c35430eadf792c9fc5a12671b5fd3c.css" integrity="sha256-pzoOtqYN/SSH8Mmk6VVdwvTDVDDq33ksn8WhJnG1/Tw=" />
 
 
 
@@ -38,29 +38,24 @@
 
 
 
-<script defer src="/js/main.bundle.min.5a00293bacd8510f50add105212cea76d541a955f6693035ef3128b638a21619.js" integrity="sha256-WgApO6zYUQ9QrdEFISzqdtVBqVX2aTA17zEotjiiFhk="></script>
+<script defer src="/js/main.bundle.min.a1c8d640e4a8d5082111050453ecea2acb51f15bfb698b28c199a184d7770982.js" integrity="sha256-ocjWQOSo1QghEQUEU&#43;zqKstR8Vv7aYsowZmhhNd3CYI="></script>
 
 
 
 
 
 
-<meta property="og:url" content="http://localhost:1313/blog/post1/">
-  <meta property="og:site_name" content="GionaBolzer - Blog">
-  <meta property="og:title" content="Process Injection with Defender e AppLocker bypass">
-  <meta property="og:description" content="The goal is to develop a custom process injection payload utilizing low-level Win32 API calls, while evading detection by Microsoft Defender and bypassing AppLocker restrictions.">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="blog">
-    <meta property="article:published_time" content="2024-12-08T00:00:00+00:00">
-    <meta property="article:modified_time" content="2024-12-08T00:00:00+00:00">
-    <meta property="og:image" content="http://localhost:1313/author1.jpg">
+<meta property="og:title" content="Process Injection with Defender e AppLocker bypass" />
+<meta property="og:description" content="The goal is to develop a custom process injection payload utilizing low-level Win32 API calls, while evading detection by Microsoft Defender and bypassing AppLocker restrictions." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://gionabolzer.com/blog/post1/" /><meta property="og:image" content="https://gionabolzer.com/author1.jpg" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2024-12-08T00:00:00+00:00" />
+<meta property="article:modified_time" content="2024-12-08T00:00:00+00:00" /><meta property="og:site_name" content="blog" />
 
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="http://localhost:1313/author1.jpg">
-  <meta name="twitter:title" content="Process Injection with Defender e AppLocker bypass">
-  <meta name="twitter:description" content="The goal is to develop a custom process injection payload utilizing low-level Win32 API calls, while evading detection by Microsoft Defender and bypassing AppLocker restrictions.">
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://gionabolzer.com/author1.jpg" /><meta name="twitter:title" content="Process Injection with Defender e AppLocker bypass"/>
+<meta name="twitter:description" content="The goal is to develop a custom process injection payload utilizing low-level Win32 API calls, while evading detection by Microsoft Defender and bypassing AppLocker restrictions."/>
 
 
 <script>
@@ -157,7 +152,7 @@
       
         
         <div class="flex flex-col">
-          <img class="mt-4 h-full w-full object-cover" src="/post1/photo1_hu1431373527561183953.webp" alt="feature image" height="431" width="736" />
+          <img class="mt-4 h-full w-full object-cover" src="/post1/photo1_hu64820993dcbf92996585bf9aaa231f9f_43738_filter_11492400015018413633.webp" alt="feature image" height="431" width="736" />
           
         </div>
       
@@ -210,7 +205,7 @@
   <div class="grid-cols-1 grid gap-1">
     
       
-      <img src="/blog/post1/defender/defender_hu10675193686687947470.webp" alt="image" loading="lazy" />
+      <img src="/blog/post1/defender/defender_hu42d7e00e87b50951e7bbb4f808f753ed_200176_filter_5082060997473007509.webp" alt="image" loading="lazy" />
     
   </div>
   
@@ -248,7 +243,7 @@
   <div class="grid-cols-1 grid gap-1">
     
       
-      <img src="/blog/post1/applocker/applocker_hu3791382974479120922.webp" alt="image" loading="lazy" />
+      <img src="/blog/post1/applocker/applocker_hu90240826cc6a5f742aa90ff848a94efc_337911_filter_5082060997473007509.webp" alt="image" loading="lazy" />
     
   </div>
   
@@ -270,8 +265,8 @@
 </span></span></code></pre></div><h1 id="the-shellcode-injector">The shellcode injector</h1>
 <p>I want to create a C# payload that uses the following Win32 APIs to inject the shellcode:</p>
 <ul>
-<li><strong><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntcreatesection">NtCreateSection</a></strong></li>
-<li><strong><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-zwmapviewofsection">NtCreateSection</a></strong> to map the section in the target process</li>
+<li><strong><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntcreatesection">NtCreateSection</a></strong> to create a section in memory to share with target process</li>
+<li><strong><a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-zwmapviewofsection">NtMapViewOfSection</a></strong> to map the section in the target process</li>
 </ul>
 <p>We also need to get the handles of the process with:</p>
 <ul>
@@ -535,7 +530,7 @@
   <div class="grid-cols-1 grid gap-1">
     
       
-      <img src="/blog/post1/rev_shell/rev_shell_hu16225853902737149401.webp" alt="image" loading="lazy" />
+      <img src="/blog/post1/rev_shell/rev_shell_hue886273ffdab99f45248317f94badb8c_27788_filter_5082060997473007509.webp" alt="image" loading="lazy" />
     
   </div>
   

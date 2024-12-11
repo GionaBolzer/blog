@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blog on GionaBolzer - Blog</title>
-    <link>http://localhost:1313/blog/</link>
+    <link>https://gionabolzer.com/blog/</link>
     <description>Recent content in Blog on GionaBolzer - Blog</description>
-    <generator>Hugo</generator>
+    <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 08 Dec 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://gionabolzer.com/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Process Injection with Defender e AppLocker bypass</title>
-      <link>http://localhost:1313/blog/post1/</link>
+      <link>https://gionabolzer.com/blog/post1/</link>
       <pubDate>Sun, 08 Dec 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/blog/post1/</guid>
+      <guid>https://gionabolzer.com/blog/post1/</guid>
       <description>The goal is to develop a custom process injection payload utilizing low-level Win32 API calls, while evading detection by Microsoft Defender and bypassing AppLocker restrictions.</description>
     </item>
   </channel>

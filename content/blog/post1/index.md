@@ -57,8 +57,8 @@ For more information, contact your system administrator
 
 I want to create a C# payload that uses the following Win32 APIs to inject the shellcode:
  
-* **[NtCreateSection](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntcreatesection)**
-* **[NtCreateSection](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-zwmapviewofsection)** to map the section in the target process
+* **[NtCreateSection](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-ntcreatesection)** to create a section in memory to share with target process
+* **[NtMapViewOfSection](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-zwmapviewofsection)** to map the section in the target process
 
 We also need to get the handles of the process with:
 
