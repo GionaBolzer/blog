@@ -1,4 +1,5 @@
 #!/bin/bash
+npm run build-tailwind
 hugo
 tar -cvf public.tar public/ 
 scp public.tar blog:/var/www/ 
