@@ -324,7 +324,7 @@ Exhausted the search. The binary looks good to go!
 
 we see that our effort paid off.
 
-## Amsi Bypass
+## AppLocker Bypass
 
 Because there is also AppLocker in place, our user can't invoke the .NET framework directly in the terminal; a simple call to a C# function will fail.
 
