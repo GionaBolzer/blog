@@ -5,7 +5,7 @@
 author:
   name: GionaBolzer
   image: author1.jpg
-  greeting: "InfoSec enthusiast"
+  greeting: "Sales & Marketing Coordinator"
 #  icon: ":wave:"
 
 ############################
@@ -18,7 +18,7 @@ links:
   # - website: 
   # - x-twitter: 
   # - mastodon: 
-  # - linkedin: 
+  - linkedin:  https://www.linkedin.com/in/giona-bolzer-49114534a
   - instagram: https://www.instagram.com/gionabolzer/
   # - reddit: 
   # - telegram: 
